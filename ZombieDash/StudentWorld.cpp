@@ -1,6 +1,9 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
+#include "Level.h"
 #include <string>
+#include <list>
+#include <vector>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
@@ -22,6 +25,30 @@ StudentWorld::~StudentWorld()
 
 int StudentWorld::init()
 {
+    string levelOne = "level01.txt";
+    Level lev(assetPath());
+    lev.loadLevel(levelOne);
+    for (int i = 0; i < LEVEL_HEIGHT; i++)
+    {
+        for (int j = 0; j < LEVEL_WIDTH; j++)
+        {
+            Level::MazeEntry ge = lev.getContentsOf(i, j);
+            switch(ge)
+            {
+                case Level::player:
+                    player = new Penelope(this, SPRITE_WIDTH * j, SPRITE_HEIGHT * i);
+                    break;
+                case Level::wall:
+                    actorSet.push_back(new Wall(this, SPRITE_WIDTH * j, SPRITE_HEIGHT * i));
+                    break;
+                default:
+                    break;
+                
+            }
+        }
+    }
+    
+    
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -29,25 +56,36 @@ int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-    decLives();
-    return GWSTATUS_PLAYER_DIED;
+    
+    player->doSomething();
+    list<Actor*>::iterator it;
+    for (it = actorSet.begin(); it != actorSet.end(); it++)
+    {
+        if (!(*it)->death())
+            (*it)->doSomething();
+    }
+    
+    //decLives();
+    return GWSTATUS_CONTINUE_GAME;
 }
 
 void StudentWorld::cleanUp()
 {
-    vector<Actor*>::iterator it = actorSet.begin();
+    list<Actor*>::iterator it = actorSet.begin();
     
     while (it != actorSet.end())
     {
         delete (*it);
         it = actorSet.erase(it);
     }
-    delete player;
+    
+    if (player != nullptr)
+        delete player;
 }
 
 bool StudentWorld::checkPlace(int startx, int starty)
 {
-    vector<Actor*>::iterator it = actorSet.begin();
+    list<Actor*>::iterator it = actorSet.begin();
     while(it != actorSet.end())
     {
         if(boundary(*it, startx, starty))
@@ -67,6 +105,7 @@ bool StudentWorld::boundary(Actor *act, int x, int y)
     }
     return false;
 }
+
 
 
 
