@@ -10,6 +10,9 @@
 
 using namespace std;
 
+class Penelope;
+class Actor;
+
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
@@ -25,7 +28,7 @@ public:
     bool boundary(Actor* act, int x, int y);
 
 private:
-    vector<Actor*> actorSet;
+    list<Actor*> actorSet;
     Penelope* player;
     
 };
